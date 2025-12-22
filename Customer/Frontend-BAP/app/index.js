@@ -30,7 +30,7 @@ const index = () => {
         onPress={() => router.push('/BrowsePage')}
         className='my-4'
       >
-        <Text className='text-lg font-semibold'>Browse</Text>
+      <Text className='text-lg font-semibold'>Browse</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => router.push('/Checkout')}
@@ -38,6 +38,21 @@ const index = () => {
       >
         <Text className='text-lg font-semibold'>Checkout</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => router.push('/QrScanScreen')}
+        className='my-4'
+      >
+      <Text className='text-lg font-semibold'>QR Scan Screen</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => router.push('/UploadHarvest')}
+        className='my-4'
+      >
+        <Text className='text-lg font-semibold'>Upload Harvest</Text>
+      </TouchableOpacity>
+
+      
     </View>
   );
 };
