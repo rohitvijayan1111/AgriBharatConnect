@@ -1,0 +1,252 @@
+// controllers/productsController.js
+const pool = require('../config/db');
+
+// 1. Add Product
+exports.addProduct = async (req, res) => {
+  try {
+    const { name, type, unit, description, image_url } = req.body;
+
+    if (!name || !type) {
+      return res.status(400).json({ error: 'Name and type are required' });
+    }
+
+    const validTypes = [
+      'crop',
+      'dairy',
+      'livestock',
+      'tool',
+      'fertilizer',
+      'seed',
+    ];
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({ error: 'Invalid product type' });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO products (name, type, unit, description, image_url)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [name, type, unit || null, description || null, image_url || null]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// 2. Get All Products
+// exports.getAllProducts = async (req, res) => {
+//   try {
+//     const { type, name } = req.query;
+
+//     const params = [];
+//     const conditions = [];
+
+//     // Dynamic filters
+//     if (type) {
+//       params.push(type);
+//       conditions.push(`p.type = $${params.length}`);
+//     }
+//     if (name) {
+//       params.push(`%${name}%`);
+//       conditions.push(`p.name ILIKE $${params.length}`);
+//     }
+
+//     // Base query with LEFT JOIN and aggregation
+//     let query = `
+//       SELECT
+//         p.*,
+//         COALESCE(ROUND(AVG(b.price_per_unit), 2), 0) AS average_batch_price,
+//         COUNT(b.id) AS total_batches
+//       FROM products p
+//       LEFT JOIN batches b
+//         ON b.product_id = p.id
+//         -- AND b.status = 'LISTED'
+//     `;
+
+//     // Apply WHERE conditions if any
+//     if (conditions.length) {
+//       query += ' WHERE ' + conditions.join(' AND ');
+//     }
+
+//     // GROUP BY and ORDER BY at the end
+//     query += ' GROUP BY p.id ORDER BY p.created_at DESC';
+
+//     const result = await pool.query(query, params);
+//     res.json(result.rows);
+//   } catch (err) {
+//     console.error(err.message);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// };
+exports.getAllProducts = async (req, res) => {
+  try {
+    // Get query parameters
+    const { type, name, show } = req.query;
+
+    const params = [];
+    const conditions = [];
+
+    // Dynamic filters
+    if (type) {
+      params.push(type);
+      conditions.push(`p.type = $${params.length}`);
+    }
+
+    if (name) {
+      params.push(`%${name}%`);
+      conditions.push(`p.name ILIKE $${params.length}`);
+    }
+
+    // Boolean filter for special/customer products
+    if (show !== undefined) {
+      params.push(show === 'true'); // convert string to boolean
+      conditions.push(`p.is_customer_product = $${params.length}`);
+    }
+
+    // Base query with LEFT JOIN and aggregation
+    // let query = `
+    //   SELECT
+    //     p.*,
+    //     COALESCE(ROUND(AVG(b.price_per_unit), 2), 0) AS average_batch_price,
+    //     COUNT(b.id) AS total_batches
+    //   FROM products p
+    //   LEFT JOIN batches b
+    //     ON b.product_id = p.id
+    //     -- AND b.status = 'LISTED'
+    // `;
+    let query = `
+        SELECT 
+        p.*,
+        COALESCE(ROUND(AVG(b.price_per_unit), 2), 0) AS average_batch_price,
+        COUNT(b.id) AS total_batches,
+        COALESCE(SUM(
+          CASE 
+            WHEN b.status IN ('PENDING', 'LISTED', 'APPROVED') 
+            THEN b.current_qty_kg 
+            ELSE 0 
+          END
+        ), 0) AS tstock
+      FROM products p
+      LEFT JOIN batches b ON b.product_id = p.id
+    `;
+
+    // Apply WHERE conditions if any exist
+    if (conditions.length) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    // GROUP BY and ORDER BY at the end
+    query += ' GROUP BY p.id ORDER BY p.created_at DESC';
+
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// 3. Get Product Details
+exports.getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('SELECT * FROM products WHERE id = $1', [
+      id,
+    ]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// 4. Update Product
+exports.updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, type, unit, description, image_url } = req.body;
+
+    // Build dynamic update query
+    const fields = [];
+    const values = [];
+    let idx = 1;
+
+    if (name) {
+      fields.push(`name = $${idx++}`);
+      values.push(name);
+    }
+    if (type) {
+      const validTypes = [
+        'crop',
+        'dairy',
+        'livestock',
+        'tool',
+        'fertilizer',
+        'seed',
+      ];
+      if (!validTypes.includes(type))
+        return res.status(400).json({ error: 'Invalid type' });
+      fields.push(`type = $${idx++}`);
+      values.push(type);
+    }
+    if (unit) {
+      fields.push(`unit = $${idx++}`);
+      values.push(unit);
+    }
+    if (description) {
+      fields.push(`description = $${idx++}`);
+      values.push(description);
+    }
+    if (image_url) {
+      fields.push(`image_url = $${idx++}`);
+      values.push(image_url);
+    }
+
+    if (fields.length === 0) {
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    values.push(id); // for WHERE clause
+    const query = `UPDATE products SET ${fields.join(
+      ', '
+    )} WHERE id = $${idx} RETURNING *`;
+
+    const result = await pool.query(query, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// 5. Delete Product
+exports.deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      'DELETE FROM products WHERE id = $1 RETURNING *',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    res.json({ message: 'Product deleted successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+};

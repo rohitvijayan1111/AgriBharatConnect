@@ -1,25 +1,16 @@
-<<<<<<< HEAD
 import 'package:flutter/material.dart';
-import 'payment_completion_screen.dart'; // ensure this file exists
+import 'payment_completion_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
   final Map<String, dynamic> order;
 
   const PaymentScreen({super.key, required this.order});
-=======
-// TODO Implement this library.
-import 'package:flutter/material.dart';
-
-class PaymentScreen extends StatefulWidget {
-  const PaymentScreen({super.key});
->>>>>>> 89f70c0f0ca5889202553f4504723363d59b1deb
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-<<<<<<< HEAD
   String paymentType = "COD";
   bool loading = false;
 
@@ -27,23 +18,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
     if (loading) return;
     setState(() => loading = true);
 
-    // 👇 Navigate and wait for result
+    // 👉 Navigate directly to success screen
     Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => PaymentCompletionScreen(
-      amount: "1679",
-      method: paymentType == "COD" ? "Cash" : "Online",
-      dateTime: "September 1, 2025 at 9:45 PM",
-    ),
-  ),
-);
+      context,
+      MaterialPageRoute(
+        builder: (_) => PaymentCompletionScreen(
+          amount: widget.order['totalAmount'].toString(),
+          method: paymentType,
+          dateTime: DateTime.now().toString(),
+        ),
+      ),
+    );
 
-
-    // Reset loading when user comes back
-    if (mounted) {
-      setState(() => loading = false);
-    }
+    setState(() => loading = false);
   }
 
   Widget _buildOption(String type, String label, String emoji) {
@@ -60,26 +47,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
             width: 2,
           ),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
         ),
         child: Row(
           children: [
-            Expanded(
-              child: Text(
-                "$emoji $label",
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
+            Expanded(child: Text("$emoji $label")),
             if (isSelected)
               const Text(
                 "✓",
@@ -98,7 +69,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0FDF4), // bg-green-50
+      backgroundColor: const Color(0xFFF0FDF4),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -110,30 +81,20 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF065F46), // green-800
+                  color: Color(0xFF065F46),
                 ),
               ),
               const SizedBox(height: 20),
-
-              // COD Option
               _buildOption("COD", "Cash on Delivery (COD)", "🧺"),
-
-              // Online Option
               _buildOption("ONLINE", "Online Payment", "🌱"),
-
               const Spacer(),
-
-              // Proceed Button
               ElevatedButton(
                 onPressed: loading ? null : handlePayment,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      loading ? Colors.green[300] : Colors.green[600],
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
+                  backgroundColor: loading
+                      ? Colors.green[300]
+                      : Colors.green[600],
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   minimumSize: const Size(double.infinity, 50),
                 ),
                 child: Text(
@@ -148,14 +109,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ],
           ),
         ),
-=======
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Voice Page')),
-      body: const Center(
-        child: Text('This is the Voice Page', style: TextStyle(fontSize: 18)),
->>>>>>> 89f70c0f0ca5889202553f4504723363d59b1deb
       ),
     );
   }

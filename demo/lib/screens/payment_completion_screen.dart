@@ -1,5 +1,6 @@
-<<<<<<< HEAD
+import 'package:demo/screens/CustomerScreens/customer_main_screen.dart';
 import 'package:flutter/material.dart';
+import 'home_page.dart'; // <-- make sure this path matches your project
 
 class PaymentCompletionScreen extends StatelessWidget {
   final String amount;
@@ -8,9 +9,9 @@ class PaymentCompletionScreen extends StatelessWidget {
 
   const PaymentCompletionScreen({
     super.key,
-    this.amount = "1679",
-    this.method = "Cash",
-    this.dateTime = "September 1, 2025 at 9:45 PM",
+    required this.amount,
+    required this.method,
+    required this.dateTime,
   });
 
   @override
@@ -38,7 +39,6 @@ class PaymentCompletionScreen extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // ✅ Success Icon
                   Container(
                     width: 64,
                     height: 64,
@@ -53,55 +53,36 @@ class PaymentCompletionScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-
-                  // ✅ Title
                   const Text(
                     "Order Successful",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 8),
-
-                  // ✅ Subtitle
                   const Text(
                     "Thank you for your purchase. Your order is being processed.",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black54,
-                      height: 1.4,
-                    ),
                     textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.black54, height: 1.4),
                   ),
                   const SizedBox(height: 24),
-
-                  // ✅ Payment details
-                  Column(
-                    children: [
-                      _buildRow("Amount Paid", "₹$amount"),
-                      _buildRow("Payment Method", method),
-                      _buildRow("Date & Time", dateTime),
-                    ],
-                  ),
+                  _buildRow("Amount Paid", "₹$amount"),
+                  _buildRow("Payment Method", method),
+                  _buildRow("Date & Time", dateTime),
                   const SizedBox(height: 24),
-
-                  // ✅ Back to Home button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.popUntil(
-                            context, ModalRoute.withName('/home'));
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CustomerMainScreen(value: 1),
+                          ),
+                          (route) => false, // clears navigation stack
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2B9846),
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
                       ),
                       child: const Text(
                         "Back to Home",
@@ -122,50 +103,24 @@ class PaymentCompletionScreen extends StatelessWidget {
     );
   }
 
-  // Helper widget for details rows
   static Widget _buildRow(String label, String value) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFEDEDED), width: 1),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFEDEDED), width: 1)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(color: Colors.black54)),
-          Flexible(
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.right,
-              overflow: TextOverflow.ellipsis,
+          Text(
+            value,
+            style: const TextStyle(
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
             ),
           ),
         ],
-=======
-// TODO Implement this library.
-import 'package:flutter/material.dart';
-
-class PaymentSuccessPage extends StatefulWidget {
-  const PaymentSuccessPage({super.key});
-
-  @override
-  State<PaymentSuccessPage> createState() => _PaymentSuccessPageState();
-}
-
-class _PaymentSuccessPageState extends State<PaymentSuccessPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Voice Page')),
-      body: const Center(
-        child: Text('This is the Voice Page', style: TextStyle(fontSize: 18)),
->>>>>>> 89f70c0f0ca5889202553f4504723363d59b1deb
       ),
     );
   }

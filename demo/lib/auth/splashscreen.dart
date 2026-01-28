@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:demo/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../screens/welcome_screen.dart';
@@ -7,6 +7,8 @@ import 'signin.dart';
 import '../global.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -29,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen> {
             if (context.mounted) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => WelcomeScreen()),
+                MaterialPageRoute(builder: (context) => MainScreen()),
               );
             }
           });
@@ -52,8 +54,8 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _fetchUserData(String userId) async {
     if (globalUserId == null || globalUsername == null) {
       try {
-        final FirebaseAuth _auth = FirebaseAuth.instance;
-        User? user = _auth.currentUser;
+        final FirebaseAuth auth = FirebaseAuth.instance;
+        User? user = auth.currentUser;
         if (user != null) {
           globalUserId = user.uid;
           globalUsername = user.displayName ?? 'User';
